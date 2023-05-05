@@ -1,0 +1,134 @@
+{
+  "name": "cpm-cmake-manager",
+  "publisher": "arno-dev",
+  "displayName": "CPM.cmake Manager",
+  "description": "Manage packages that have been retrieved using CPM.cmake",
+  "version": "0.0.4",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "homepage": "https://github.com/itavero/vscode-cpm-cmake-manager",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itavero/vscode-cpm-cmake-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itavero/vscode-cpm-cmake-manager/issues"
+  },
+  "sponsor": {
+    "url": "https://github.com/sponsors/itavero"
+  },
+  "engines": {
+    "vscode": "^1.77.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "cpm",
+    "cpm.cmake",
+    "cmake",
+    "package manager"
+  ],
+  "qna": false,
+  "activationEvents": [
+    "workspaceContains:CMakeLists.txt",
+    "workspaceContains:**/CMakeLists.txt"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "CPM.cmake Manager",
+      "properties": {
+        "cpm-cmake-manager.cachePath": {
+          "title": "Path to global CPM.cmake source cache",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Path to the global CPM.cmake cache. If not set, the extension will look at the CPM_SOURCE_CACHE environment variable."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "cpm-cmake-manager.clearEntireCache",
+        "title": "Clear entire source cache (and reconfigure)",
+        "icon": "$(trash)",
+        "category": "CPM.cmake Manager"
+      },
+      {
+        "command": "cpm-cmake-manager.clearCache",
+        "title": "Clear specific packages in source cache",
+        "icon": "$(trash)",
+        "category": "CPM.cmake Manager",
+        "when": "view == cpmPackages"
+      },
+      {
+        "command": "cpm-cmake-manager.openPackage",
+        "title": "Open source directory in new window",
+        "icon": "$(empty-window)",
+        "when": "view == cpmPackages"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "cpmPackages",
+          "name": "CPM.cmake Packages",
+          "when": "cpm-cmake-manager.showTreeView"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "cpmPackages",
+        "contents": "No CPM.cmake packages found in the CMake cache.\nPerhaps the CMake is still busy configuring the project, or CPM.cmake is not being used in this project.\n[Configure CMake project](command:cmake.configure)\n[Learn more about CPM.cmake](https://github.com/cpm-cmake/CPM.cmake)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "cpm-cmake-manager.clearCache",
+          "when": "view == cpmPackages",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "cpm-cmake-manager.openPackage",
+          "when": "view == cpmPackages",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.77.0",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
+    "@vscode/test-electron": "^2.3.0",
+    "eslint": "^8.36.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.5"
+  },
+  "extensionDependencies": [
+    "ms-vscode.cmake-tools"
+  ],
+  "dependencies": {
+    "semver": "^7.5.0",
+    "simple-git": "^3.17.0",
+    "vscode-cmake-tools": "^1.0.0"
+  }
+}
