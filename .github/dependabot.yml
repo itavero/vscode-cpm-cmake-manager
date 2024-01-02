@@ -1,0 +1,9 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    open-pull-requests-limit: 15
+    directory: "/"
+    assignees:
+      - itavero
+    schedule:
+      interval: "monthly"
