@@ -120,7 +120,7 @@
     "@vscode/test-electron": "^2.3.8",
     "eslint": "^8.36.0",
     "glob": "^8.1.0",
-    "mocha": "^10.2.0",
+    "mocha": "^10.4.0",
     "typescript": "^5.3.3"
   },
   "extensionDependencies": [
