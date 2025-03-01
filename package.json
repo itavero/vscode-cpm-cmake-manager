@@ -121,7 +121,7 @@
     "eslint": "^8.36.0",
     "glob": "^8.1.0",
     "mocha": "^11.1.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   },
   "extensionDependencies": [
     "ms-vscode.cmake-tools"
