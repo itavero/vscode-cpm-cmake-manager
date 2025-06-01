@@ -127,7 +127,7 @@
     "ms-vscode.cmake-tools"
   ],
   "dependencies": {
-    "semver": "^7.7.1",
+    "semver": "^7.7.2",
     "simple-git": "^3.27.0",
     "vscode-cmake-tools": "^1.2.0"
   }
