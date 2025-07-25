@@ -1,7 +1,7 @@
 import { CpmCmakePackage } from "./cmakecache";
 import * as fs from "fs";
 import * as path from "path";
-import { simpleGit, SimpleGit, CleanOptions } from "simple-git";
+import { simpleGit, SimpleGit } from "simple-git";
 import * as semver from "semver";
 import { tryRepairVersionNumber } from "./versionutils";
 import { Logger } from "./logger";
