@@ -105,7 +105,10 @@
       {
         "name": "cpm-cmake-packages",
         "displayName": "CPM.cmake Packages",
-        "modelDescription": "Get information about CPM.cmake packages in the current workspace. CPM (CMake Package Manager) is a tool for managing dependencies in CMake projects. This tool provides details about all CPM packages including their names, versions, source directories, build directories, Git information, and update status."
+        "modelDescription": "Get information about CPM.cmake packages in the current workspace. CPM (CMake Package Manager) is a tool for managing dependencies in CMake projects. This tool provides details about all CPM packages including their names, versions, source directories, build directories, Git information, and update status.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "get_cpm_cmake_packages",
+        "userDescription": "Retrieve list of packages from CPM.cmake Manager"
       }
     ]
   },
