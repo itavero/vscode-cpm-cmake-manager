@@ -5,6 +5,7 @@ import { PackagesView } from "./packagesview";
 import { OutputChannelLogger } from "./outputlogger";
 import { CmakeCacheWatcher } from "./cmakecachewatcher";
 import { CpmManager } from "./cpmmanager";
+import { registerCpmLanguageModelTool } from "./cpmLanguageModelTool";
 
 let logger: OutputChannelLogger | undefined;
 
@@ -33,6 +34,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Subscribe watcher to events of CMake Tools API
   watcher.connect();
+
+  // Register Language Model Tool for Copilot
+  registerCpmLanguageModelTool(context, manager, logger);
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
