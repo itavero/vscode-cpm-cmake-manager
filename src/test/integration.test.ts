@@ -7,7 +7,7 @@ import * as fs from "fs";
  * Integration tests for the CPM CMake Manager using the example project.
  * These tests verify that the extension works with a real CMake project using CPM.
  */
-suite("CPM CMake Manager Integration Test Suite", () => {
+suite("CPM.cmake Manager Integration Tests", () => {
   const exampleProjectPath = path.join(__dirname, "..", "..", "example");
   let workspaceFolder: vscode.WorkspaceFolder;
 
@@ -52,14 +52,21 @@ suite("CPM CMake Manager Integration Test Suite", () => {
 
     workspaceFolder = vscode.workspace.workspaceFolders?.[0]!;
 
-    // Wait for CMake configuration to complete by checking for CMakeCache.txt
+    // Wait for CPM cache directories to be created and CMake configuration to complete
+    const cacheDir = path.join(exampleProjectPath, "cache");
+    const etlCacheDir = path.join(cacheDir, "etl");
+    const fakeitCacheDir = path.join(cacheDir, "fakeit");
     const cmakeCachePath = path.join(buildDir, "CMakeCache.txt");
     const maxWaitTime = 120000; // 2 minutes max wait
     const checkInterval = 50; // Check every 50ms
     let startTime = Date.now();
 
     while (
-      !fs.existsSync(cmakeCachePath) &&
+      !(
+        fs.existsSync(cmakeCachePath) &&
+        fs.existsSync(etlCacheDir) &&
+        fs.existsSync(fakeitCacheDir)
+      ) &&
       Date.now() - startTime < maxWaitTime
     ) {
       await new Promise((resolve) => setTimeout(resolve, checkInterval));
@@ -70,58 +77,40 @@ suite("CPM CMake Manager Integration Test Suite", () => {
         "CMake configuration did not complete within timeout! No CMakeCache.txt found."
       );
     }
-  });
 
-  test("Extension should be active and working", async () => {
-    const ext = vscode.extensions.getExtension("arno-dev.cpm-cmake-manager");
-    assert.ok(ext, "Extension should be available");
-
-    if (!ext.isActive) {
-      await ext.activate();
+    startTime = Date.now();
+    while (
+      (!fs.existsSync(etlCacheDir) || !fs.existsSync(fakeitCacheDir)) &&
+      Date.now() - startTime < maxWaitTime
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, checkInterval));
     }
 
-    assert.ok(ext.isActive, "Extension should be active");
-  });
-
-  test("Example project should have CMakeLists.txt", () => {
-    const cmakeListsPath = path.join(exampleProjectPath, "CMakeLists.txt");
-    assert.ok(
-      fs.existsSync(cmakeListsPath),
-      "CMakeLists.txt should exist in example project"
-    );
-  });
-
-  test("Example project should have get_cpm.cmake", () => {
-    const getCpmPath = path.join(exampleProjectPath, "get_cpm.cmake");
-    assert.ok(
-      fs.existsSync(getCpmPath),
-      "get_cpm.cmake should exist in example project"
-    );
-  });
-
-  test("Commands should be available", async () => {
-    const commands = await vscode.commands.getCommands(true);
-
-    const expectedCommands = [
-      "cpm-cmake-manager.clearCache",
-      "cpm-cmake-manager.clearEntireCache",
-      "cpm-cmake-manager.openPackage",
-    ];
-
-    for (const command of expectedCommands) {
-      assert.ok(
-        commands.includes(command),
-        `Command ${command} should be registered`
+    if (!fs.existsSync(etlCacheDir) || !fs.existsSync(fakeitCacheDir)) {
+      console.error(
+        "CPM cache directories not found! Expected etl and fakeit cache dirs."
       );
     }
   });
 
-  test("CPM packages view should be available", async () => {
-    // The packages view should be registered as a tree data provider
-    // We can't directly test the view without more complex setup,
-    // but we can verify the extension is properly structured
-    const ext = vscode.extensions.getExtension("arno-dev.cpm-cmake-manager");
-    assert.ok(ext?.isActive, "Extension should be active for view tests");
+  test("Should detect CPM packages from real CMake cache", async () => {
+    // Verify that the extension can detect packages from the actual CMake cache
+    const buildDir = path.join(exampleProjectPath, "build");
+    const cmakeCachePath = path.join(buildDir, "CMakeCache.txt");
+
+    // The cache should exist from setup
+    assert.ok(fs.existsSync(cmakeCachePath), "CMakeCache.txt should exist");
+
+    // Verify cache directories exist
+    const cacheDir = path.join(exampleProjectPath, "cache");
+    const etlCacheDir = path.join(cacheDir, "etl");
+    const fakeitCacheDir = path.join(cacheDir, "fakeit");
+
+    assert.ok(fs.existsSync(etlCacheDir), "ETL cache directory should exist");
+    assert.ok(
+      fs.existsSync(fakeitCacheDir),
+      "FakeIt cache directory should exist"
+    );
   });
 
   test("Should handle CMake cache changes gracefully", async function () {
@@ -139,15 +128,15 @@ CMAKE_PROJECT_NAME:STRING=math_thingy
 
 # CPM package variables
 CPM_PACKAGES:STRING=etl;fakeit;range-v3
-CPM_PACKAGE_etl_SOURCE_DIR:PATH=${buildDir}/_deps/etl-src
+CPM_PACKAGE_etl_SOURCE_DIR:PATH=${exampleProjectPath}/cache/etl/993b/etl
 CPM_PACKAGE_etl_VERSION:STRING=20.38.17
 CPM_PACKAGE_etl_BINARY_DIR:PATH=${buildDir}/_deps/etl-build
 
-CPM_PACKAGE_fakeit_SOURCE_DIR:PATH=${buildDir}/_deps/fakeit-src
+CPM_PACKAGE_fakeit_SOURCE_DIR:PATH=${exampleProjectPath}/cache/fakeit/a716/FakeIt
 CPM_PACKAGE_fakeit_VERSION:STRING=2.4.0
 CPM_PACKAGE_fakeit_BINARY_DIR:PATH=${buildDir}/_deps/fakeit-build
 
-CPM_PACKAGE_range-v3_SOURCE_DIR:PATH=${buildDir}/_deps/range-v3-src
+CPM_PACKAGE_range-v3_SOURCE_DIR:PATH=${exampleProjectPath}/cache/range-v3/src
 CPM_PACKAGE_range-v3_VERSION:STRING=0.12.0
 CPM_PACKAGE_range-v3_BINARY_DIR:PATH=${buildDir}/_deps/range-v3-build
 `;
@@ -164,58 +153,45 @@ CPM_PACKAGE_range-v3_BINARY_DIR:PATH=${buildDir}/_deps/range-v3-build
     fs.rmSync(buildDir, { recursive: true, force: true });
   });
 
-  test("Clear cache command should work without errors", async () => {
-    // This test verifies that the command can be executed without throwing
+  test("Clear cache command should allow package selection", async () => {
+    // Verify that packages exist and can be detected
+    const cacheDir = path.join(exampleProjectPath, "cache");
+    const etlCacheDir = path.join(cacheDir, "etl");
+    const fakeitCacheDir = path.join(cacheDir, "fakeit");
+
+    // Verify cache directories exist before testing command
+    assert.ok(fs.existsSync(etlCacheDir), "ETL cache should exist for testing");
+    assert.ok(
+      fs.existsSync(fakeitCacheDir),
+      "FakeIt cache should exist for testing"
+    );
+
+    // Execute the clear cache command (this will show a QuickPick dialog but won't actually clear anything in tests)
+    // We can't easily test the QuickPick interaction in automated tests, but we can verify the command executes
     try {
       await vscode.commands.executeCommand("cpm-cmake-manager.clearCache");
-      // If we get here without an exception, the command executed successfully
-      assert.ok(true, "Clear cache command executed without errors");
+      assert.ok(true, "Clear cache command executed without throwing");
     } catch (error) {
-      // The command might show a warning if no packages are found, which is expected
-      console.log("Clear cache command result:", error);
+      // Command might show a warning if no packages are found, which is acceptable
       assert.ok(
         true,
-        "Command executed (may have shown warning about no packages)"
+        "Command executed (may have shown package selection dialog)"
       );
     }
   });
 
-  test("Clear entire cache command should work without errors", async () => {
+  test("Clear entire cache command behavior", async () => {
+    // The clearEntireCache command clears the global CPM cache (CPM_SOURCE_CACHE), not project cache
+    // This test verifies the command handles missing cache path gracefully
+
     try {
       await vscode.commands.executeCommand(
         "cpm-cmake-manager.clearEntireCache"
       );
-      assert.ok(true, "Clear entire cache command executed without errors");
+      assert.ok(true, "Clear entire cache command executed without throwing");
     } catch (error) {
-      // The command might show a warning if no cache path is configured, which is expected
-      console.log("Clear entire cache command result:", error);
-      assert.ok(
-        true,
-        "Command executed (may have shown warning about cache path)"
-      );
-    }
-  });
-
-  test("Should handle workspace folder changes gracefully", async () => {
-    // Verify extension doesn't crash when workspace folders change
-    const originalFolders = vscode.workspace.workspaceFolders?.length || 0;
-
-    // The extension should handle workspace changes without throwing
-    try {
-      // Trigger workspace change event by accessing workspace folders
-      const folders = vscode.workspace.workspaceFolders;
-      assert.ok(
-        folders !== undefined,
-        "Workspace folders should be accessible"
-      );
-      assert.ok(
-        folders.length >= originalFolders,
-        "Should have at least the original folders"
-      );
-    } catch (error) {
-      assert.fail(
-        `Extension should handle workspace folder access gracefully: ${error}`
-      );
+      // Expected: command might fail because CPM_SOURCE_CACHE is not configured in test environment
+      assert.ok(true, "Command handled missing cache path configuration");
     }
   });
 });

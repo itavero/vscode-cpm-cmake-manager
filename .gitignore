@@ -5,6 +5,7 @@ node_modules
 *.vsix
 vsc-extension-quickstart.md
 example/build/
+example/cache/
 
 # Logs
 logs

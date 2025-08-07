@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.28)
 project(vscode-example VERSION 1.0.0)
 
+# Set CPM.cmake cache directory to a local folder, so we can access it for testing.
+set(ENV{CPM_SOURCE_CACHE} "${CMAKE_SOURCE_DIR}/cache")
+set(ENV{CPM_USE_NAMED_CACHE_DIRECTORIES} ON)
+
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
