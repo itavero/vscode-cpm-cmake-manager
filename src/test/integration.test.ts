@@ -50,12 +50,26 @@ suite("CPM CMake Manager Integration Test Suite", () => {
     // Wait a bit for workspace to be ready
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    workspaceFolder =
-      vscode.workspace.workspaceFolders?.find(
-        (folder) => folder.uri.fsPath === exampleProjectPath
-      ) || vscode.workspace.workspaceFolders?.[0]!;
+    workspaceFolder = vscode.workspace.workspaceFolders?.[0]!;
 
-    console.log(`Using workspace folder: ${workspaceFolder.uri.fsPath}`);
+    // Wait for CMake configuration to complete by checking for CMakeCache.txt
+    const cmakeCachePath = path.join(buildDir, "CMakeCache.txt");
+    const maxWaitTime = 120000; // 2 minutes max wait
+    const checkInterval = 50; // Check every 50ms
+    let startTime = Date.now();
+
+    while (
+      !fs.existsSync(cmakeCachePath) &&
+      Date.now() - startTime < maxWaitTime
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, checkInterval));
+    }
+
+    if (!fs.existsSync(cmakeCachePath)) {
+      console.error(
+        "CMake configuration did not complete within timeout! No CMakeCache.txt found."
+      );
+    }
   });
 
   test("Extension should be active and working", async () => {
