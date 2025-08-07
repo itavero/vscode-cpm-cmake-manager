@@ -1,0 +1,11 @@
+{
+  "cmake.configureOnOpen": true,
+  "cmake.configureOnEdit": false,
+  "cmake.useCMakePresets": "never",
+  "cmake.showSystemKits": false,
+  "cmake.ignoreKitEnv": true,
+  "cmake.enableAutomaticKitScan": false,
+  "cmake.automaticReconfigure": true,
+  "cmake.preferredGenerators": ["Ninja"],
+  "cmake.buildDirectory": "${workspaceFolder}/build"
+}

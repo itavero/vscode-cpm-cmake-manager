@@ -20,4 +20,6 @@
     "sync": false
   },
   "cSpell.allowCompoundWords": true,
+  "cSpell.words": ["itavero"],
+  "cmake.ignoreCMakeListsMissing": true
 }

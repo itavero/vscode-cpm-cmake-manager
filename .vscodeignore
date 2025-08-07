@@ -1,10 +1,23 @@
 .vscode/**
 .vscode-test/**
 src/**
+example/
+.github/
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
+DEVELOPMENT.md
 **/tsconfig.json
-**/.eslintrc.json
+**/eslint.config.mjs
 **/*.map
 **/*.ts
+**/.vscode-test.*
+**/*.test.js
+.env*
+
+# Not everything from the vscode-cmake-tools package is needed
+node_modules/vscode-cmake-tools/jobs/
+node_modules/vscode-cmake-tools/sample-extension/
+node_modules/vscode-cmake-tools/tsconfig.json
+node_modules/vscode-cmake-tools/*.md
+ 
