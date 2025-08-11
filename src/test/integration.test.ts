@@ -20,8 +20,8 @@ suite("CPM.cmake Manager Integration Tests", () => {
     console.log(`Set CPM_SOURCE_CACHE to: ${sourceCacheDir}`);
 
     // Clean up any existing build and cache directories to ensure a fresh start
-    if (fs.existsSync(this.buildDir)) {
-      fs.rmSync(this.buildDir, { recursive: true, force: true });
+    if (fs.existsSync(buildDir)) {
+      fs.rmSync(buildDir, { recursive: true, force: true });
       console.log("Cleaned up existing build directory");
     }
 
@@ -62,7 +62,6 @@ suite("CPM.cmake Manager Integration Tests", () => {
     // Wait for CPM cache directories to be created and CMake configuration to complete
     const etlCacheDir = path.join(sourceCacheDir, "etl");
     const fakeItCacheDir = path.join(sourceCacheDir, "fakeit");
-    const buildDir = path.join(exampleProjectPath, "build");
     const cmakeCachePath = path.join(buildDir, "CMakeCache.txt");
     const maxWaitTime = 120000; // 2 minutes max wait
     const checkInterval = 50; // Check every 50ms

@@ -15,3 +15,9 @@ Provides an easy way to manage packages included using CPM.cmake from within Vis
 * Show link to package's Git repository in the package list
 * Ability to turn off automatic check for newer versions
 * Ability to manually trigger to check for newer versions
+
+## Thanks to
+
+* The contributors of the [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake) project for providing such a useful tool.
+  * Also thanks to [@TheLartians](https://github.com/TheLartians) in particular for starting the project and making the logo (which I also incorporated into the icon of this extension).
+* The maintainers of the [CMake Tools extension](https://github.com/microsoft/vscode-cmake-tools) for making CMake easy to work with in VS Code.
