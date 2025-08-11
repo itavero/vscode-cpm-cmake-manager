@@ -10,7 +10,7 @@ import * as fs from "fs";
 suite("CPM.cmake Manager Integration Tests", () => {
   const exampleProjectPath = path.join(__dirname, "..", "..", "example");
   const sourceCacheDir = path.join(exampleProjectPath, "cache");
-  let workspaceFolder: vscode.WorkspaceFolder;
+  const buildDir = path.join(exampleProjectPath, "build");
 
   suiteSetup(async function () {
     this.timeout(60000);
@@ -20,9 +20,8 @@ suite("CPM.cmake Manager Integration Tests", () => {
     console.log(`Set CPM_SOURCE_CACHE to: ${sourceCacheDir}`);
 
     // Clean up any existing build and cache directories to ensure a fresh start
-    const buildDir = path.join(exampleProjectPath, "build");
-    if (fs.existsSync(buildDir)) {
-      fs.rmSync(buildDir, { recursive: true, force: true });
+    if (fs.existsSync(this.buildDir)) {
+      fs.rmSync(this.buildDir, { recursive: true, force: true });
       console.log("Cleaned up existing build directory");
     }
 
@@ -60,11 +59,10 @@ suite("CPM.cmake Manager Integration Tests", () => {
     // Wait a bit for workspace to be ready
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    workspaceFolder = vscode.workspace.workspaceFolders?.[0]!;
-
     // Wait for CPM cache directories to be created and CMake configuration to complete
     const etlCacheDir = path.join(sourceCacheDir, "etl");
     const fakeItCacheDir = path.join(sourceCacheDir, "fakeit");
+    const buildDir = path.join(exampleProjectPath, "build");
     const cmakeCachePath = path.join(buildDir, "CMakeCache.txt");
     const maxWaitTime = 120000; // 2 minutes max wait
     const checkInterval = 50; // Check every 50ms
@@ -102,19 +100,103 @@ suite("CPM.cmake Manager Integration Tests", () => {
     }
   });
 
+  setup(async () => {
+    // Make sure that cache is ready. If not, trigger configure actions of cmake tools extension first.
+    const etlCacheDir = path.join(sourceCacheDir, "etl");
+    const fakeItCacheDir = path.join(sourceCacheDir, "fakeit");
+    const cmakeCachePath = path.join(buildDir, "CMakeCache.txt");
+    if (!fs.existsSync(etlCacheDir) || !fs.existsSync(fakeItCacheDir)) {
+      vscode.commands.executeCommand("cmake.configure");
+    }
+
+    // Wait for cache directories to be created
+    const maxWaitTime = 120000; // 2 minutes max wait
+    const checkInterval = 50; // Check every 50ms
+    let startTime = Date.now();
+
+    while (
+      !(
+        fs.existsSync(etlCacheDir) &&
+        fs.existsSync(fakeItCacheDir) &&
+        fs.existsSync(cmakeCachePath)
+      ) &&
+      Date.now() - startTime < maxWaitTime
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, checkInterval));
+    }
+
+    assert.ok(fs.existsSync(cmakeCachePath), "CMakeCache.txt should exist");
+  });
+
   suiteTeardown(() => {
     delete process.env.CPM_SOURCE_CACHE;
   });
 
-  test("Clear cache command should be available when packages exist", async () => {
-    // This will show the package selection dialog but won't proceed without user input
-    // await vscode.commands.executeCommand("cpm-cmake-manager.clearCache");
-    assert.ok(
-      true,
-      "Clear cache command executed and showed package selection"
-    );
+  test.skip("Clear cache command should be available when packages exist", async function () {
+    this.timeout(30000);
 
-    /// @todo figure out how to interact with UI
+    const etlDir = path.join(sourceCacheDir, "etl");
+    const fakeItDir = path.join(sourceCacheDir, "fakeit");
+
+    // Mock the QuickPick to simulate user selecting only "fakeit"
+    const originalShowQuickPick = vscode.window.showQuickPick;
+    let quickPickItems: string[] | undefined;
+
+    const mockShowQuickPick = async (items: any[], options?: any) => {
+      // Capture the items shown in the QuickPick
+      quickPickItems = Array.isArray(items) ? items : [];
+
+      // Simulate user selecting only "FakeIt" (but we need to return the exact item)
+      // The extension expects an array of strings when canPickMany is true
+      return ["FakeIt"];
+    };
+
+    // Replace the showQuickPick method
+    (vscode.window as any).showQuickPick = mockShowQuickPick;
+
+    try {
+      // Wait a bit for the extension to process the CMake cache
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Execute the clear cache command
+      await vscode.commands.executeCommand("cpm-cmake-manager.clearCache");
+
+      // Verify that both packages were shown in the QuickPick
+      assert.ok(quickPickItems, "QuickPick should have been shown");
+      assert.ok(
+        quickPickItems!.includes("etl"),
+        "ETL package should be in the selection list"
+      );
+      assert.ok(
+        quickPickItems!.includes("FakeIt"),
+        "FakeIt package should be in the selection list"
+      );
+
+      // Wait for FakeIt directory to be removed (up to 10 seconds)
+      let fakeItRemoved = false;
+      const maxWaitTime = 10000; // 10 seconds max wait
+      const checkInterval = 100; // Check every 100ms
+      let startTime = Date.now();
+      console.log(JSON.stringify(quickPickItems));
+
+      while (!fakeItRemoved && Date.now() - startTime < maxWaitTime) {
+        // Fake It is considered removed if there's no more subdirectories in fakeItDir (there might be other files)
+        fakeItRemoved = fs.readdirSync(fakeItDir).length === 0;
+        if (!fakeItRemoved) {
+          await new Promise((resolve) => setTimeout(resolve, checkInterval));
+        }
+      }
+
+      // Verify results
+      assert.ok(fakeItRemoved, "FakeIt cache directory should be removed");
+      assert.ok(
+        fs.existsSync(etlDir),
+        "ETL cache directory should still exist"
+      );
+    } finally {
+      // Restore original showQuickPick method
+      (vscode.window as any).showQuickPick = originalShowQuickPick;
+    }
   });
 
   test("Clear entire cache command should actually clear cache", async function () {
