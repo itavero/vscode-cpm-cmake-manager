@@ -3,7 +3,7 @@
   "publisher": "arno-dev",
   "displayName": "CPM.cmake Manager",
   "description": "Manage packages that have been retrieved using CPM.cmake",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.txt",
   "homepage": "https://github.com/itavero/vscode-cpm-cmake-manager",
   "repository": {
