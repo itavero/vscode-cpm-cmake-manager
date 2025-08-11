@@ -16,7 +16,7 @@ export function tryRepairVersionNumber(version: string | undefined) {
   if (version.match(/^v?\d+$/)) {
     // If it's just a single number, add a minor version and patch version of 0.
     return `${version}.0.0`;
-  } else if (version.match(/v?^\d+\.\d+$/)) {
+  } else if (version.match(/^v?\d+\.\d+$/)) {
     // If it's a major and minor version, add a patch version of 0.
     return `${version}.0`;
   } else {

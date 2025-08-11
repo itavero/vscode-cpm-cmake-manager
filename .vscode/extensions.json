@@ -4,6 +4,7 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "DavidAnson.vscode-markdownlint",
+    "ms-vscode.extension-test-runner",
     "ms-vscode.cmake-tools",
     "streetsidesoftware.code-spell-checker"
   ]
