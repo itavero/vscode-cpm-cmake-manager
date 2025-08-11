@@ -14,5 +14,5 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Notes
 
-- Lots of housekeeping (e.g. updating dependencies, adding an icon, etc.).
+- Lots of housekeeping was done as it was long overdue (e.g. updating dependencies, adding an icon, etc.).
 - From this release onwards, the release will also be published to GitHub (including the VSIX package).
