@@ -144,7 +144,7 @@
   ],
   "dependencies": {
     "semver": "^7.7.2",
-    "simple-git": "^3.28.0",
+    "simple-git": "^3.29.0",
     "vscode-cmake-tools": "^1.5.0"
   }
 }
