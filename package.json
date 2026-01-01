@@ -135,7 +135,7 @@
     "eslint": "^9.39.0",
     "glob": "^11.0.3",
     "mocha": "^11.7.4",
-    "release-it": "^19.0.5",
+    "release-it": "^19.2.2",
     "rimraf": "^6.1.0",
     "typescript": "~5.8.3"
   },
